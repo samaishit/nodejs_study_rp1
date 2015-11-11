@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
 
 var app = express();
 
@@ -30,23 +31,29 @@ app.set("view engine", 'ejs');
 
 //set middlewares
 app.use(bodyParser.json());
-
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(methodOverride("_method"));
 //set routes
 app.get('/posts', function(req,res) {
-  Post.find({}, function (err,posts) {
+  Post.find({}).sort("-createdAt").exec(function (err,posts) {
     if(err) {
       return res.json({success:false, message:err});
     }
-    res.json({success:true, data:posts});
+    res.render("posts/index", {data:posts});
   });
 }); // index
 
+app.get('/posts/new', function (req,res) {
+  res.render("posts/new");
+});//new
+
 app.post('/posts', function(req,res) {
-  Post.create(req.body.post, function (err,posts) {
+  console.log(req.body);
+  Post.create(req.body.post, function (err,post) {
     if(err) {
       return res.json({success:false, message:err});
     }
-    res.json({success:true, data:posts});
+    res.redirect('/posts');
   });
 }); // create
 
@@ -55,9 +62,18 @@ app.get('/posts/:id', function(req,res) {
     if(err) {
       return res.json({success:false, message:err});
     }
-    res.json({success:true, data:post});
+    res.render("posts/show", {data:post});
   });
 }); // show
+
+app.get('/posts/:id/edit', function(req,res) {
+  Post.findById(req.params.id, function (err,post) {
+    if(err) {
+      return res.json({success:false, message:err});
+    }
+    res.render("posts/edit", {data:post});
+  });
+}); // edit
 
 app.put('/posts/:id', function(req,res) {
   req.body.post.updatedAt = Date.now();
@@ -65,7 +81,7 @@ app.put('/posts/:id', function(req,res) {
     if(err) {
       return res.json({success:false, message:err});
     }
-    res.json({success:true, message:post._id + " updated"});
+    res.redirect('/posts/' + req.params.id);
   });
 }); // update
 
@@ -74,7 +90,7 @@ app.delete('/posts/:id', function(req,res) {
     if(err) {
       return res.json({success:false, message:err});
     }
-    res.json({success:true, message:post._id + " deleted"});
+    res.redirect('/posts');
   });
 }); // update
 
