@@ -8,6 +8,11 @@ var methodOverride = require('method-override');
 
 var app = express();
 
+var requestBaseOptionObject = {
+    method:'GET',
+	  encoding:'binary'
+};
+/*
 mongoose.connect(process.env.MONGO_DB);
 var db = mongoose.connection;
 
@@ -27,11 +32,7 @@ var postSchema = mongoose.Schema({
 });
 
 var Post = mongoose.model('post', postSchema);
-var requestBaseOptionObject = {
-    method:'GET',
-  	headers:headers,
-	  encoding:'binary'
-};
+*/
 //veiw setting
 app.set("view engine", 'ejs');
 
@@ -39,16 +40,34 @@ app.set("view engine", 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
-//set routes
-var getPortalEstateInfo() {
-  requestBaseOptionObject.url = "http://openapi.naver.com/search?" +
-                                "key=c61a937beacba257edbad7cf23056053&target=news" +
-                                "&start=1&display=10&query=" +
-                                decodeURIComponent("부동산");
-  request(requestBaseOptionObject , function (error, response, body) {
 
-  });
-}
+//set routes
+app.get('/intro', function (req,res) {
+  requestBaseOptionObject.url = "http://openapi.naver.com/search?" +
+                                "key=4e483efff4f07ee183a9fabed8121687&target=news" +
+                                "&start=1&display=10&query=" +
+                                encodeURIComponent("부동산");
+  request(requestBaseOptionObject , function (error, response, body) {
+                      if(!error && response.statusCode == 200) {
+                        var bufferedBody = new Buffer(body, 'binary');
+                        var $ = cheerio.load(bufferedBody);
+                        var itemList = $('channel item');
+                        var dataArr = new Array();
+                        itemList.each(function (v, element) {
+                          dataArr.push({
+                            title : $(this).children('title').html(),
+                            link : $(this).children('originallink').html(),
+                            desc : $(this).children('description').html(),
+                            date : $(this).children('pubDate').html()
+                          });
+                        });
+
+                        res.render('intro/index', {data: dataArr});
+                      } else {
+                        console.log(error);
+                      }
+                    });
+});
 
 //start server
 app.listen(3000, function() {
