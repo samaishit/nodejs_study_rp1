@@ -18,10 +18,12 @@
   "homepage": "https://github.com/samaishit/nodejs_study_rp1#readme",
   "dependencies": {
     "body-parser": "^1.14.1",
+    "cheerio": "^0.19.0",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "method": "^2.0.0",
     "method-override": "^2.3.5",
-    "mongoose": "^4.2.4"
+    "mongoose": "^4.2.4",
+    "request": "^2.65.0"
   }
 }

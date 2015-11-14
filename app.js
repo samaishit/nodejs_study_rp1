@@ -1,6 +1,8 @@
 var express = require('express');
 var path = require('path');
 var mongoose = require('mongoose');
+var cheerio = require('cheerio');
+var request = require('request');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 
@@ -25,7 +27,11 @@ var postSchema = mongoose.Schema({
 });
 
 var Post = mongoose.model('post', postSchema);
-
+var requestBaseOptionObject = {
+    method:'GET',
+  	headers:headers,
+	  encoding:'binary'
+};
 //veiw setting
 app.set("view engine", 'ejs');
 
@@ -34,65 +40,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 //set routes
-app.get('/posts', function(req,res) {
-  Post.find({}).sort("-createdAt").exec(function (err,posts) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.render("posts/index", {data:posts});
-  });
-}); // index
+var getPortalEstateInfo() {
+  requestBaseOptionObject.url = "http://openapi.naver.com/search?" +
+                                "key=c61a937beacba257edbad7cf23056053&target=news" +
+                                "&start=1&display=10&query=" +
+                                decodeURIComponent("부동산");
+  request(requestBaseOptionObject , function (error, response, body) {
 
-app.get('/posts/new', function (req,res) {
-  res.render("posts/new");
-});//new
-
-app.post('/posts', function(req,res) {
-  console.log(req.body);
-  Post.create(req.body.post, function (err,post) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.redirect('/posts');
   });
-}); // create
-
-app.get('/posts/:id', function(req,res) {
-  Post.findById(req.params.id, function (err,post) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.render("posts/show", {data:post});
-  });
-}); // show
-
-app.get('/posts/:id/edit', function(req,res) {
-  Post.findById(req.params.id, function (err,post) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.render("posts/edit", {data:post});
-  });
-}); // edit
-
-app.put('/posts/:id', function(req,res) {
-  req.body.post.updatedAt = Date.now();
-  Post.findByIdAndUpdate(req.params.id, req.body.post, function (err,post) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.redirect('/posts/' + req.params.id);
-  });
-}); // update
-
-app.delete('/posts/:id', function(req,res) {
-  Post.findByIdAndRemove(req.params.id, function (err,post) {
-    if(err) {
-      return res.json({success:false, message:err});
-    }
-    res.redirect('/posts');
-  });
-}); // update
+}
 
 //start server
 app.listen(3000, function() {
