@@ -19,27 +19,29 @@
   <head>
     <% include ../partials/head %>
   </head>
-  <body>
+  <body class="jui">
     <header>
       <% include ../partials/header %>
     </header>
     <div class="posts">
       <% include partials/top %>
+      <br>
 <!-- main start -->
 
 <!-- views/posts/index.ejs -->
       <!--<div id="map" style="width:500px; height:400px"></div>-->
       <div class="index">
-        <ul>
           <% data.forEach(function (e) { %>
-          <li>
-            <%- e.title %><br>
-            <a href="<%- e.link %>">LINK</a><br>
-            <%- e.desc %><br>
-            <%= e.date %><br>
-          </li>
+          <div class="panel">
+            <div class="head">
+              <string><%- e.title %></strong><a class="btn mini focus" href="<%= e.link %>"><span class='icon icon-arrow4'></span>바로가기</a><br>
+            </div>
+            <div class="body">
+              <%- e.desc %><br>
+              <%= e.date %><br>
+            </div>
+          </div>
           <% }) %>
-        </ul>
       </div>
 <!-- main end -->
     </div><!-- posts end -->
